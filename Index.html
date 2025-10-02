@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beautiful Image Gallery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🌍 Explore the World - Image Gallery</h1>
+    <p class="tagline">A curated collection of Nature, Cityscapes, Wildlife, Food, and Travel moments.</p>
+    <nav class="filters">
+      <button data-filter="all" class="active">All</button>
+      <button data-filter="nature">Nature</button>
+      <button data-filter="city">City</button>
+      <button data-filter="animals">Animals</button>
+      <button data-filter="food">Food</button>
+      <button data-filter="travel">Travel</button>
+    </nav>
+  </header>
+
+  <main class="gallery">
+    <!-- Nature -->
+    <div class="gallery-item" data-category="nature">
+      <img src="Forest.jpeg" alt="Forest" style="height: 350px;">
+      <p class="caption">🌲 Peaceful Green Forest</p>
+    </div>
+    <div class="gallery-item" data-category="nature">
+      <img src="Waterfall.jpeg" alt="Waterfall">
+      <p class="caption">💦 Stunning Waterfall View</p>
+    </div>
+    <div class="gallery-item" data-category="nature">
+      <img src="Mountains.jpeg" alt="Mountains" style="height: 370px;>
+      <p class="caption">⛰️ Snowy Mountain Range</p>
+    </div>
+
+    <!-- City -->
+    <div class="gallery-item" data-category="city">
+      <img src="CityNight.jpeg" alt="City Night" style="height: 370px;>
+      <p class="caption">🌆 Skyline at Night</p>
+    </div>
+    <div class="gallery-item" data-category="city">
+      <img src="Bridge.jpeg" alt="Bridge" style="height: 370px;>
+      <p class="caption">🌉 Iconic City Bridge</p>
+    </div>
+    <div class="gallery-item" data-category="city">
+      <img src="Buildings.jpeg" alt="Buildings" style="height: 370px;>
+      <p class="caption">🏢 Modern Architecture</p>
+    </div>
+
+    <!-- Animals -->
+    <div class="gallery-item" data-category="animals">
+      <img src="Lion.jpeg" alt="Lion" style="height: 370px;>
+      <p class="caption">🦁 The King of the Jungle</p>
+    </div>
+    <div class="gallery-item" data-category="animals">
+      <img src="Tiger.jpeg" alt="Tiger" style="height: 370px;>
+      <p class="caption">🐅 Majestic Tiger</p>
+    </div>
+    <div class="gallery-item" data-category="animals">
+      <img src="Bird.jpeg" alt="Bird" style="height: 370px;>
+      <p class="caption">🕊️ A Bird in Flight</p>
+    </div>
+
+    <!-- Food -->
+    <div class="gallery-item" data-category="food">
+      <img src="Pizza.jpeg" alt="Pizza" style="height: 370px;>
+      <p class="caption">🍕 Delicious Pizza</p>
+    </div>
+    <div class="gallery-item" data-category="food">
+      <img src="Burgur.jpeg" alt="Burger" style="height: 370px;>
+      <p class="caption">🍔 Juicy Burger</p>
+    </div>
+    <div class="gallery-item" data-category="food">
+      <img src="IceCream.jpeg" alt="Ice Cream" style="height: 370px;>
+      <p class="caption">🍨 Sweet Ice Cream</p>
+    </div>
+
+    <!-- Travel -->
+    <div class="gallery-item" data-category="travel">
+      <img src="Beach.jpeg" alt="Beach" style="height: 370px;>
+      <p class="caption">🏖️ Relaxing Beach View</p>
+    </div>
+    <div class="gallery-item" data-category="travel">
+      <img src="Desert.jpeg" alt="Desert" style="height: 370px;>
+      <p class="caption">🏜️ Vast Golden Desert</p>
+    </div>
+    <div class="gallery-item" data-category="travel">
+      <img src="Shrinw.jpeg" alt="Temple" style="height: 370px;>
+      <p class="caption">⛩️ Cultural Heritage Temple</p>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <span class="close">&times;</span>
+    <img class="lightbox-content" id="lightbox-img" alt="Preview">
+    <p class="lightbox-caption" id="lightbox-caption"></p>
+    <a class="prev">&#10094;</a>
+    <a class="next">&#10095;</a>
+  </div>
+
+  <footer>
+    <p>&copy; ImgGallary | Developed By @Jibran Ayoob</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
