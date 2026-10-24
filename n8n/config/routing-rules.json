@@ -1,0 +1,25 @@
+{
+  "manual_review": {
+    "intent_matches": ["legal_question", "refund_request", "complex_scope", "angry_complaint"],
+    "contains_keywords": ["contract", "lawsuit", "chargeback", "urgent complaint"],
+    "lead_score_threshold": 85
+  },
+  "vip_priority": {
+    "contact_tags": ["vip", "premium", "priority"],
+    "response_sla_minutes": 10
+  },
+  "lead_scoring": {
+    "budget_mentioned": 20,
+    "timeline_mentioned": 15,
+    "service_clarity": 20,
+    "repeat_engagement": 15,
+    "business_account": 10,
+    "asks_for_consultation": 20
+  },
+  "simple_auto_reply_intents": [
+    "portfolio_request",
+    "pricing_overview",
+    "service_list",
+    "availability"
+  ]
+}

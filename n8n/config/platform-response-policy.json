@@ -1,0 +1,26 @@
+{
+  "facebook": {
+    "max_characters": 1800,
+    "allow_links": true,
+    "allow_media": true,
+    "default_cta": "Book a design consultation"
+  },
+  "instagram": {
+    "max_characters": 1000,
+    "allow_links": true,
+    "allow_media": true,
+    "default_cta": "View portfolio highlights"
+  },
+  "whatsapp": {
+    "max_characters": 1200,
+    "allow_links": true,
+    "allow_media": true,
+    "default_cta": "Reply with your project goals"
+  },
+  "linkedin": {
+    "max_characters": 1500,
+    "allow_links": true,
+    "allow_media": false,
+    "default_cta": "Schedule a discovery call"
+  }
+}
