@@ -1,0 +1,645 @@
+{
+  "name": "AI Social Media Automation Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "social-agent/incoming",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Incoming Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "2",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "id": "3",
+      "name": "Merge Triggers",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        470,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json;\nconst fromWebhook = !!item.body || !!item.headers;\n\nif (fromWebhook) {\n  const body = item.body || {};\n  return [{\n    json: {\n      triggerType: body.triggerType || 'incoming_message',\n      platform: (body.platform || 'facebook').toLowerCase(),\n      senderId: body.senderId || '',\n      messageText: body.messageText || '',\n      eventType: body.eventType || 'dm',\n      receivedAt: new Date().toISOString(),\n      raw: body\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    triggerType: 'scheduled_post',\n    platform: 'instagram',\n    senderId: 'system',\n    messageText: 'Generate a scheduled design tip post caption.',\n    eventType: 'schedule',\n    receivedAt: new Date().toISOString(),\n    raw: item\n  }\n}];"
+      },
+      "id": "4",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        690,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.triggerType}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "incoming_message"
+            },
+            {
+              "operation": "equal",
+              "value2": "scheduled_post"
+            },
+            {
+              "operation": "equal",
+              "value2": "mention_event"
+            }
+          ]
+        },
+        "fallbackOutput": 3
+      },
+      "id": "5",
+      "name": "Route Trigger Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        920,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "processingMode",
+              "value": "conversation_reply",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6",
+      "name": "Incoming Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1160,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "processingMode",
+              "value": "scheduled_content",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7",
+      "name": "Scheduled Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1160,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "processingMode",
+              "value": "mention_response",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8",
+      "name": "Mention Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1160,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "id": "9",
+      "name": "Merge Context",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1400,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = {\n  brandName: $env.BRAND_NAME || 'Your Design Studio',\n  brandVoice: $env.BRAND_VOICE || 'friendly professional',\n  portfolioUrl: $env.PORTFOLIO_URL || '',\n  bookingUrl: $env.BOOKING_URL || '',\n  availability: $env.AVAILABILITY_MESSAGE || ''\n};\n\nconst input = $json.messageText || '';\n\nconst systemPrompt = `You are an AI assistant for ${b.brandName}. Tone: ${b.brandVoice}. Keep responses concise and include CTA where relevant.`;\n\nconst userPrompt = `Platform: ${$json.platform}\\nMode: ${$json.processingMode}\\nMessage: ${input}\\nPortfolio: ${b.portfolioUrl}\\nBooking: ${b.bookingUrl}\\nAvailability: ${b.availability}`;\n\nreturn [{ json: { ...$json, systemPrompt, userPrompt } }];"
+      },
+      "id": "10",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.AI_API_BASE_URL + '/chat/completions'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.AI_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ { model: $env.AI_MODEL || 'gpt-4o-mini', temperature: Number($env.AI_TEMPERATURE || 0.4), max_tokens: Number($env.AI_MAX_TOKENS || 500), messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ] } }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      },
+      "id": "11",
+      "name": "Call AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1880,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json;\nconst content = raw?.choices?.[0]?.message?.content || 'Thanks for your message. I can help with your design needs.';\n\nreturn [{\n  json: {\n    ...$item(0).$node['Build Prompt'].json,\n    aiRaw: raw,\n    responseText: String(content).slice(0, 1800),\n    ctaUrl: $env.BOOKING_URL || '',\n    leadScore: 50,\n    manualReview: false\n  }\n}];"
+      },
+      "id": "12",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2120,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.platform}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "facebook"
+            },
+            {
+              "operation": "equal",
+              "value2": "instagram"
+            },
+            {
+              "operation": "equal",
+              "value2": "whatsapp"
+            },
+            {
+              "operation": "equal",
+              "value2": "linkedin"
+            }
+          ]
+        },
+        "fallbackOutput": 4
+      },
+      "id": "13",
+      "name": "Platform Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2360,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "deliveredPayload",
+              "value": "={{ { text: $json.responseText, cta: $json.ctaUrl, channel: 'facebook' } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "14",
+      "name": "Format Facebook",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2600,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "deliveredPayload",
+              "value": "={{ { text: $json.responseText, cta: $json.ctaUrl, channel: 'instagram' } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "15",
+      "name": "Format Instagram",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2600,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "deliveredPayload",
+              "value": "={{ { text: $json.responseText, cta: $json.ctaUrl, channel: 'whatsapp' } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "16",
+      "name": "Format WhatsApp",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2600,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "deliveredPayload",
+              "value": "={{ { text: $json.responseText, cta: $json.ctaUrl, channel: 'linkedin' } }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "17",
+      "name": "Format LinkedIn",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2600,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.ANALYTICS_WEBHOOK_URL}}",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ { platform: $json.platform, triggerType: $json.triggerType, senderId: $json.senderId, deliveredPayload: $json.deliveredPayload, leadScore: $json.leadScore, manualReview: $json.manualReview, timestamp: new Date().toISOString() } }}"
+      },
+      "id": "18",
+      "name": "Log Interaction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'ok', platform: $json.platform, manualReview: $json.manualReview, leadScore: $json.leadScore } }}",
+        "options": {}
+      },
+      "id": "19",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        3060,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Incoming Webhook": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Route Trigger Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Trigger Type": {
+      "main": [
+        [
+          {
+            "node": "Incoming Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scheduled Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mention Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Incoming Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incoming Context": {
+      "main": [
+        [
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scheduled Context": {
+      "main": [
+        [
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mention Context": {
+      "main": [
+        [
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Context": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call AI": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Platform Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Platform Router": {
+      "main": [
+        [
+          {
+            "node": "Format Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Facebook": {
+      "main": [
+        [
+          {
+            "node": "Log Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Instagram": {
+      "main": [
+        [
+          {
+            "node": "Log Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Log Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Log Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Interaction": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1"
+}
